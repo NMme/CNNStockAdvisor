@@ -1,4 +1,6 @@
 import torch
+from torch.utils.data import TensorDataset, DataLoader
+from torch.nn import CrossEntropyLoss
 import pandas as pd
 import os
 
@@ -24,40 +26,49 @@ data_gen = DataGenerator(company_code, PATH_TO_COMPANY_DATA, OUTPUT_PATH, update
 x_train, y_train, x_cv, y_cv, x_test, y_test, df_batch_train, df_batch_test, sample_weights, is_last_batch = \
     data_gen.get_rolling_data_next(None, 12)
 
+# create training dataset and dataloader
+x_train = torch.FloatTensor(x_train).permute(0,3,1,2)
+y_train = torch.LongTensor(y_train)
+tr_dataset = TensorDataset(x_train, y_train)
+tr_dataloader = DataLoader(tr_dataset, batch_size=8, shuffle=True, num_workers=0)
+
 # create model
 net = CNN1()
 # set optimizer
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
+# set loss function
+criterion = CrossEntropyLoss()
 
-# for epoch in range(2):  # loop over the dataset multiple times
-#
-#     running_loss = 0.0
-#     for i, data in enumerate(trainloader, 0):
-#         # get the inputs; data is a list of [inputs, labels]
-#         inputs, labels = data
-#
-#         # zero the parameter gradients
-#         optimizer.zero_grad()
-#
-#         # forward + backward + optimize
-#         outputs = net(inputs)
-#         loss = criterion(outputs, labels)
-#         loss.backward()
-#         optimizer.step()
-#
-#         # print statistics
-#         running_loss += loss.item()
-#         if i % 2000 == 1999:    # print every 2000 mini-batches
-#             print('[%d, %5d] loss: %.3f' %
-#                   (epoch + 1, i + 1, running_loss / 2000))
-#             running_loss = 0.0
+for epoch in range(10):  # loop over the dataset multiple times
+
+    running_loss = 0.0
+    for i, data in enumerate(tr_dataloader, 0):
+        # get the inputs; data is a list of [inputs, labels]
+        inputs, labels = data
+
+        # zero the parameter gradients
+        optimizer.zero_grad()
+
+        # forward + backward + optimize
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        # print statistics
+        running_loss += loss.item()
+        if i % 200 == 199:    # print every 200 mini-batches
+            print('[%d, %5d] loss: %.3f' %
+                  (epoch + 1, i + 1, running_loss / 200))
+            running_loss = 0.0
 
 print('Finished Training')
 
 if __name__ == "__main__":
     # execute only if run as a script
-    x_train, y_train, x_cv, y_cv, x_test, y_test, df_batch_train, df_batch_test, sample_weights, is_last_batch = \
-        data_gen.get_rolling_data_next(None, 12)
-    print(x_train[0,:,:,1])
-    print(y_train[0])
+    #x_train, y_train, x_cv, y_cv, x_test, y_test, df_batch_train, df_batch_test, sample_weights, is_last_batch = \
+    #    data_gen.get_rolling_data_next(None, 12)
+    #print(x_train[0])
+    #print(y_train[0])
+    print('hi')
 

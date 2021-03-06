@@ -326,11 +326,12 @@ class DataGenerator:
         x = mm_scaler.fit_transform(x)
         dim = int(np.sqrt(x.shape[1]))
         x = reshape_as_image(x, dim, dim)
-        x = np.stack((x,) * 3, axis=-1)
+        #x = np.stack((x,) * 3, axis=-1)
+        x = np.stack((x,), axis=-1)
 
         y = df_batch['labels'].values
         sample_weights = self.get_sample_weights(y)
-        y = self.one_hot_enc.transform(y.reshape(-1, 1))
+        #y = self.one_hot_enc.transform(y.reshape(-1, 1))
 
         return x, y, df_batch, sample_weights
 

@@ -26,8 +26,9 @@ class CNN1(Module):
         x = self.conv2(x)
         x = self.pool(x)
         x = self.dropout1(x)
+        x = x.view(-1, 7*7*64)
         x = self.fc1(x)
         x = self.dropout2(x)
         x = self.fc2(x)
-        x = self.softmax(x)
+        #x = self.softmax(x)
         return x
